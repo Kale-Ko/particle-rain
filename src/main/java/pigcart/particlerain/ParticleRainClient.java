@@ -1,7 +1,7 @@
 package pigcart.particlerain;
 
 import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
@@ -16,22 +16,25 @@ import pigcart.particlerain.particle.RainDropParticle;
 import pigcart.particlerain.particle.SnowFlakeParticle;
 
 public class ParticleRainClient implements ClientModInitializer {
-
     public static final String MOD_ID = "particlerain";
 
-    public static SimpleParticleType RAIN_DROP;
-    public static SimpleParticleType SNOW_FLAKE;
-    public static SimpleParticleType DESERT_DUST;
+    public static ParticleRainClient INSTANCE;
 
-    public static SoundEvent WEATHER_SNOW;
-    public static SoundEvent WEATHER_SNOW_ABOVE;
-    public static SoundEvent WEATHER_SANDSTORM;
-    public static SoundEvent WEATHER_SANDSTORM_ABOVE;
+    public SimpleParticleType RAIN_DROP;
+    public SimpleParticleType SNOW_FLAKE;
+    public SimpleParticleType DESERT_DUST;
 
-    public static ModConfig config;
+    public SoundEvent WEATHER_SNOW;
+    public SoundEvent WEATHER_SNOW_ABOVE;
+    public SoundEvent WEATHER_SANDSTORM;
+    public SoundEvent WEATHER_SANDSTORM_ABOVE;
+
+    public ModConfig config;
 
     @Override
     public void onInitializeClient() {
+        ParticleRainClient.INSTANCE = this;
+
         RAIN_DROP = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "rain_drop"), FabricParticleTypes.simple(true));
         SNOW_FLAKE = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "snow_flake"), FabricParticleTypes.simple(true));
         DESERT_DUST = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "desert_dust"), FabricParticleTypes.simple(true));
@@ -45,20 +48,21 @@ public class ParticleRainClient implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(SNOW_FLAKE, SnowFlakeParticle.DefaultFactory::new);
         ParticleFactoryRegistry.getInstance().register(DESERT_DUST, DesertDustParticle.DefaultFactory::new);
 
-        AutoConfig.register(ModConfig.class, JanksonConfigSerializer::new);
+        AutoConfig.register(ModConfig.class, GsonConfigSerializer::new);
         config = AutoConfig.getConfigHolder(ModConfig.class).getConfig();
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onTick);
-
     }
 
     private void onTick(Minecraft client) {
-        if (!client.isPaused() && client.level != null && client.getCameraEntity() != null)
+        if (!client.isPaused() && client.level != null && client.getCameraEntity() != null) {
             WeatherParticleSpawner.update(client.level, client.getCameraEntity(), client.getFrameTime());
+        }
     }
 
     private static SoundEvent registerSound(String name) {
         ResourceLocation id = new ResourceLocation(MOD_ID, name);
+
         return Registry.register(Registry.SOUND_EVENT, id, new SoundEvent(id));
     }
 }

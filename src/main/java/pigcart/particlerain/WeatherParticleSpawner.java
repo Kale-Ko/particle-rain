@@ -1,78 +1,80 @@
 package pigcart.particlerain;
 
+import java.util.Random;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biome.Precipitation;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.Heightmap;
-import org.jetbrains.annotations.Nullable;
+import pigcart.particlerain.ModConfig.ParticleConfig;
 
 public final class WeatherParticleSpawner {
-
     private static final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-    private WeatherParticleSpawner() {
-    }
-
-    private static void spawnParticle(ClientLevel level, Holder<Biome> biome, double x, double y, double z) {
-        if (biome.value().getPrecipitation() != Biome.Precipitation.NONE) {
-            if (biome.value().getBaseTemperature() >= 0.15F) {
-                if (ParticleRainClient.config.doRainParticles)
-                    level.addParticle(ParticleRainClient.RAIN_DROP, x, y, z, 1, 1, 1);
-            } else {
-                if (ParticleRainClient.config.doSnowParticles && level.getRandom().nextFloat() < 0.2F)
-                    level.addParticle(ParticleRainClient.SNOW_FLAKE, x, y, z, 1, 1, 1);
-            }
-        } else if (ParticleRainClient.config.doSandParticles && level.getRandom().nextFloat() < 0.5F) {
-            if (biome.is(Biomes.DESERT)) {
-                level.addParticle(ParticleRainClient.DESERT_DUST, x, y, z, 0.9F, 0.8F, 0.6F);
-            } else if (biome.is(BiomeTags.IS_BADLANDS)) {
-                level.addParticle(ParticleRainClient.DESERT_DUST, x, y, z, 0.8F, 0.4F, 0);
-            }
-        }
-    }
 
     public static void update(ClientLevel level, Entity entity, float partialTicks) {
         if (level.isRaining()) {
-            int density = (int) ((level.isThundering() ? ParticleRainClient.config.particleStormDensity : ParticleRainClient.config.particleDensity) * level.getRainLevel(partialTicks));
+            Holder<Biome> biome = level.getBiome(entity.blockPosition());
+            ParticleConfig particleConfig = null;
 
-            RandomSource rand = RandomSource.create();
+            if (biome.value().getPrecipitation() == Precipitation.RAIN) {
+                particleConfig = ParticleRainClient.INSTANCE.config.rain;
+            } else if (biome.value().getPrecipitation() == Precipitation.SNOW) {
+                particleConfig = ParticleRainClient.INSTANCE.config.snow;
+            } else if (biome.is(Biomes.DESERT) || biome.is(BiomeTags.IS_BADLANDS)) {
+                particleConfig = ParticleRainClient.INSTANCE.config.sand;
+            }
 
-            for (int pass = 0; pass < density; pass++) {
+            if (particleConfig != null && particleConfig.enabled) {
+                int density = (int) ((!level.isThundering() ? particleConfig.density : particleConfig.stormDensity) * level.getRainLevel(partialTicks));
 
-                float theta = (float) (2 * Math.PI * rand.nextFloat());
-                float phi = (float) Math.acos(2 * rand.nextFloat() - 1);
-                double x = ParticleRainClient.config.particleRadius * Mth.sin(phi) * Math.cos(theta);
-                double y = ParticleRainClient.config.particleRadius * Mth.sin(phi) * Math.sin(theta);
-                double z = ParticleRainClient.config.particleRadius * Mth.cos(phi);
+                Random rand = new Random();
 
-                pos.set(x + entity.getX(), y + entity.getY(), z + entity.getZ());
-                if (level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) > pos.getY())
-                    continue;
+                for (int pass = 0; pass < density; pass++) {
+                    double theta = rand.nextFloat((float) (Math.PI * 2));
+                    double phi = Math.acos((rand.nextFloat() * 2) - 1);
+                    double x = ParticleRainClient.INSTANCE.config.radius * Math.sin(phi) * Math.cos(theta);
+                    double y = ParticleRainClient.INSTANCE.config.radius * Math.sin(phi) * Math.sin(theta);
+                    double z = ParticleRainClient.INSTANCE.config.radius * Math.cos(phi);
 
-                spawnParticle(level, level.getBiome(pos), pos.getX() + rand.nextFloat(), pos.getY() + rand.nextFloat(), pos.getZ() + rand.nextFloat());
+                    pos.set(x + entity.getX(), y + entity.getY(), z + entity.getZ());
+
+                    if (level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) > pos.getY()) {
+                        continue;
+                    }
+
+                    biome = level.getBiome(pos);
+
+                    if (biome.value().getPrecipitation() == Precipitation.RAIN) {
+                        level.addParticle(ParticleRainClient.INSTANCE.RAIN_DROP, pos.getX(), pos.getY(), pos.getZ(), 1, 1, 1);
+                    } else if (biome.value().getPrecipitation() == Precipitation.SNOW) {
+                        level.addParticle(ParticleRainClient.INSTANCE.SNOW_FLAKE, pos.getX(), pos.getY(), pos.getZ(), 1, 1, 1);
+                    } else {
+                        if (biome.is(Biomes.DESERT)) {
+                            level.addParticle(ParticleRainClient.INSTANCE.DESERT_DUST, pos.getX(), pos.getY(), pos.getZ(), 0.9f, 0.8f, 0.6f);
+                        } else if (biome.is(BiomeTags.IS_BADLANDS)) {
+                            level.addParticle(ParticleRainClient.INSTANCE.DESERT_DUST, pos.getX(), pos.getY(), pos.getZ(), 0.8f, 0.4f, 0);
+                        }
+                    }
+                }
             }
         }
     }
 
-    @Nullable
     public static SoundEvent getBiomeSound(Holder<Biome> biome, boolean above) {
-        if (biome.value().getPrecipitation() != Biome.Precipitation.NONE) {
-            if (biome.value().getBaseTemperature() >= 0.15F) {
-                return above ? SoundEvents.WEATHER_RAIN_ABOVE : SoundEvents.WEATHER_RAIN;
-            } else {
-                return above ? ParticleRainClient.WEATHER_SNOW_ABOVE : ParticleRainClient.WEATHER_SNOW;
-            }
-        } else if (biome.is(Biomes.DESERT) || biome.is(BiomeTags.IS_BADLANDS)) {
-            return above ? ParticleRainClient.WEATHER_SANDSTORM_ABOVE : ParticleRainClient.WEATHER_SANDSTORM;
+        if (ParticleRainClient.INSTANCE.config.rain.enabled && biome.value().getPrecipitation() == Precipitation.RAIN) {
+            return !above ? SoundEvents.WEATHER_RAIN : SoundEvents.WEATHER_RAIN_ABOVE;
+        } else if (ParticleRainClient.INSTANCE.config.snow.enabled && biome.value().getPrecipitation() == Precipitation.SNOW) {
+            return !above ? ParticleRainClient.INSTANCE.WEATHER_SNOW : ParticleRainClient.INSTANCE.WEATHER_SNOW_ABOVE;
+        } else if (ParticleRainClient.INSTANCE.config.sand.enabled) {
+            return !above ? ParticleRainClient.INSTANCE.WEATHER_SANDSTORM : ParticleRainClient.INSTANCE.WEATHER_SANDSTORM_ABOVE;
         }
+
         return null;
     }
 }

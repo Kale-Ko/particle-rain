@@ -15,31 +15,37 @@ import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import pigcart.particlerain.ParticleRainClient;
 
 public class RainDropParticle extends WeatherParticle {
-
     private final BlockPos.MutableBlockPos fluidPos;
 
     protected RainDropParticle(ClientLevel clientWorld, double x, double y, double z, float red, float green, float blue, SpriteSet provider) {
-        super(clientWorld, x, y, z, red, green, blue, ParticleRainClient.config.rainDropGravity, provider);
+        super(clientWorld, x, y, z, red, green, blue, provider, ParticleRainClient.INSTANCE.config.rain);
 
-        this.lifetime = 200;
-        this.quadSize = 0.5F;
+        this.quadSize = 0.5f;
+
         this.fluidPos = new BlockPos.MutableBlockPos();
     }
 
     @Override
     public void tick() {
         super.tick();
+
         this.fluidPos.set(this.x, this.y - 0.1, this.z);
 
-        if (this.shouldRemove() || this.onGround || !this.level.getFluidState(this.fluidPos).isEmpty()) {
-            this.remove();
-            if (this.onGround)
-                Minecraft.getInstance().particleEngine.createParticle(ParticleTypes.RAIN, this.x, this.y, this.z, 0, 0, 0);
+        if (this.shouldRemove() || this.onGround || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.fluidPos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA) || this.y < this.level.getMinBuildHeight()) {
+            if (this.onGround || this.level.getFluidState(this.fluidPos).is(FluidTags.WATER)) {
+                Minecraft minecraft = Minecraft.getInstance(); // So the resource isn't leaked
+                minecraft.particleEngine.createParticle(ParticleTypes.RAIN, this.x, this.y, this.z, 0, 0, 0);
+
+                this.remove();
+            } else {
+                this.remove();
+            }
         }
     }
 
@@ -54,7 +60,7 @@ public class RainDropParticle extends WeatherParticle {
         quaternion.mul(Vector3f.YP.rotationDegrees(camera.getYRot()));
         quaternion.mul(Vector3f.YP.rotation((float) Math.atan2(x, z)));
 
-        Vector3f[] vector3fs = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
+        Vector3f[] vector3fs = new Vector3f[] { new Vector3f(-1.0f, -1.0f, 0.0f), new Vector3f(-1.0f, 1.0f, 0.0f), new Vector3f(1.0f, 1.0f, 0.0f), new Vector3f(1.0f, -1.0f, 0.0f) };
         float k = this.getQuadSize(f);
 
         for (int l = 0; l < 4; ++l) {
@@ -82,7 +88,6 @@ public class RainDropParticle extends WeatherParticle {
 
     @Environment(EnvType.CLIENT)
     public static class DefaultFactory implements ParticleProvider<SimpleParticleType> {
-
         private final SpriteSet provider;
 
         public DefaultFactory(SpriteSet provider) {

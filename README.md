@@ -1,2 +1,3 @@
 # particle-rain
-Minecraft Fabric mod that replaces the vanilla rain with particle effects.
+
+A Minecraft Fabric mod that replaces normal rain with faster particle effects.

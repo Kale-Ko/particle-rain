@@ -12,16 +12,17 @@ import net.minecraft.tags.FluidTags;
 import pigcart.particlerain.ParticleRainClient;
 
 public class SnowFlakeParticle extends WeatherParticle {
-
     private SnowFlakeParticle(ClientLevel level, double x, double y, double z, float red, float green, float blue, SpriteSet provider) {
-        super(level, x, y, z, red, green, blue, ParticleRainClient.config.snowFlakeGravity, provider);
-        this.lifetime = ParticleRainClient.config.particleRadius * 10;
-        this.setSize(0.1F, 0.1F);
+        super(level, x, y, z, red, green, blue, provider, ParticleRainClient.INSTANCE.config.snow);
+
+        this.setSize(0.1f, 0.1f);
     }
 
+    @Override
     public void tick() {
         super.tick();
-        if (this.shouldRemove() || this.onGround || this.level.getFluidState(this.pos).is(FluidTags.WATER)) {
+
+        if (this.shouldRemove() || this.onGround || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA) || this.y < this.level.getMinBuildHeight()) {
             this.remove();
         }
     }
@@ -33,7 +34,6 @@ public class SnowFlakeParticle extends WeatherParticle {
 
     @Environment(EnvType.CLIENT)
     public static class DefaultFactory implements ParticleProvider<SimpleParticleType> {
-
         private final SpriteSet provider;
 
         public DefaultFactory(SpriteSet provider) {

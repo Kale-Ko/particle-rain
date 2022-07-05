@@ -10,22 +10,35 @@ import net.minecraft.tags.FluidTags;
 import pigcart.particlerain.ParticleRainClient;
 
 public class DesertDustParticle extends WeatherParticle {
+    protected float beenOnGround = -1;
 
     private DesertDustParticle(ClientLevel clientWorld, double x, double y, double z, float red, float green, float blue, SpriteSet provider) {
-        super(clientWorld, x, y, z, red, green, blue, ParticleRainClient.config.desertDustGravity, provider);
-        this.lifetime = 100;
-        this.xd = -0.4F;
+        super(clientWorld, x, y, z, red, green, blue, provider, ParticleRainClient.INSTANCE.config.sand);
+
+        // this.lifespan = 80;
     }
 
     @Override
     public void tick() {
         super.tick();
 
-        this.xd = -0.4;
-        if (this.shouldRemove() || this.xo == this.x || this.level.getFluidState(this.pos).is(FluidTags.WATER))
+        if (this.shouldRemove() || this.xo == this.x || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA)) {
             this.remove();
-        if (this.onGround)
-            this.yd = 0.1F;
+        }
+
+        if (this.onGround) {
+            this.beenOnGround = 1;
+        }
+
+        if (this.beenOnGround > -1) {
+            if (this.beenOnGround >= 0) {
+                this.yd = this.beenOnGround * 0.25;
+            } else {
+                this.yd = -(!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity) * -this.beenOnGround;
+            }
+
+            this.beenOnGround -= 0.1;
+        }
     }
 
     @Override
@@ -34,7 +47,6 @@ public class DesertDustParticle extends WeatherParticle {
     }
 
     public static class DefaultFactory implements ParticleProvider<SimpleParticleType> {
-
         private final SpriteSet provider;
 
         public DefaultFactory(SpriteSet provider) {

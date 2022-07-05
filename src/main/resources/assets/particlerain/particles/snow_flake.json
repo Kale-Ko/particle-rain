@@ -1,7 +1,7 @@
 {
-  "textures": [
-    "particlerain:snow_flake",
-    "particlerain:snow_flake_2",
-    "particlerain:snow_flake_3"
-  ]
+    "textures": [
+        "particlerain:snow_flake_1",
+        "particlerain:snow_flake_2",
+        "particlerain:snow_flake_3"
+    ]
 }

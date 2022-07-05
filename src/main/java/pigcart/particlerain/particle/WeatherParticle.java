@@ -6,40 +6,64 @@ import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import pigcart.particlerain.ModConfig.ParticleConfig;
 import pigcart.particlerain.ParticleRainClient;
 
 public abstract class WeatherParticle extends TextureSheetParticle {
+    protected ParticleConfig particleConfig;
+
+    protected int lifespan;
+    protected int life = 0;
 
     protected final BlockPos.MutableBlockPos pos;
 
-    protected WeatherParticle(ClientLevel level, double x, double y, double z, float red, float green, float blue, float gravity, SpriteSet provider) {
+    protected WeatherParticle(ClientLevel level, double x, double y, double z, float red, float green, float blue, SpriteSet provider, ParticleConfig particleConfig) {
         super(level, x, y, z, red, green, blue);
+
+        this.particleConfig = particleConfig;
+
         this.setSprite(provider.get(level.getRandom()));
 
-        this.gravity = gravity;
-
-        this.xd = 0.0F;
-        this.yd = -gravity;
-        this.zd = 0.0F;
+        this.xd = (!this.level.isThundering() ? particleConfig.wind : particleConfig.stormWind);
+        this.yd = -(!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity);
+        this.zd = 0.0f;
 
         this.rCol = red;
         this.gCol = green;
         this.bCol = blue;
 
-        this.quadSize = 0.1F;
+        this.quadSize = 0.1f;
 
         this.pos = new BlockPos.MutableBlockPos();
+
+        this.lifespan = Math.round((ParticleRainClient.INSTANCE.config.radius / (!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity)) * 20f);
     }
 
     @Override
     public void tick() {
+        this.age = 0;
+        this.lifetime = 20;
+
         super.tick();
+
+        if (this.life < this.lifespan) {
+            this.life++;
+
+            if (this.life == this.lifespan) {
+                this.remove();
+            }
+        }
+
+        this.xd = (!this.level.isThundering() ? particleConfig.wind : particleConfig.stormWind);
+        this.yd = -(!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity);
+        this.zd = 0.0f;
+
         this.pos.set(this.x, this.y, this.z);
     }
 
     protected boolean shouldRemove() {
         Entity cameraEntity = Minecraft.getInstance().getCameraEntity();
-        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > (ParticleRainClient.config.particleRadius + 2) * (ParticleRainClient.config.particleRadius + 2);
-        // particleRadius + 2 prevents particles from flickering in and out at the edge of the radius
+
+        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > (ParticleRainClient.INSTANCE.config.radius + 2) * (ParticleRainClient.INSTANCE.config.radius + 2);
     }
 }
