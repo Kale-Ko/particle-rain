@@ -8,7 +8,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.material.Fluids;
 import pigcart.particlerain.ParticleRainClient;
 
 public class SnowFlakeParticle extends WeatherParticle {
@@ -22,7 +22,7 @@ public class SnowFlakeParticle extends WeatherParticle {
     public void tick() {
         super.tick();
 
-        if (this.shouldRemove() || this.onGround || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA) || this.y < this.level.getMinBuildHeight()) {
+        if (this.shouldRemove() || this.onGround || this.y < this.level.getMinBuildHeight() || this.level.getFluidState(this.pos).getType() != Fluids.EMPTY) {
             this.remove();
         }
     }

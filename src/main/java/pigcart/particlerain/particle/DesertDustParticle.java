@@ -6,7 +6,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.material.Fluids;
 import pigcart.particlerain.ParticleRainClient;
 
 public class DesertDustParticle extends WeatherParticle {
@@ -14,15 +14,13 @@ public class DesertDustParticle extends WeatherParticle {
 
     private DesertDustParticle(ClientLevel clientWorld, double x, double y, double z, float red, float green, float blue, SpriteSet provider) {
         super(clientWorld, x, y, z, red, green, blue, provider, ParticleRainClient.INSTANCE.config.sand);
-
-        // this.lifespan = 80;
     }
 
     @Override
     public void tick() {
         super.tick();
 
-        if (this.shouldRemove() || this.xo == this.x || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA)) {
+        if (this.shouldRemove() || this.xo == this.x || this.y < this.level.getMinBuildHeight() || this.level.getFluidState(this.pos).getType() != Fluids.EMPTY) {
             this.remove();
         }
 

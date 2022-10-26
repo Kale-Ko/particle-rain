@@ -17,6 +17,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import pigcart.particlerain.ParticleRainClient;
 
@@ -37,15 +38,13 @@ public class RainDropParticle extends WeatherParticle {
 
         this.fluidPos.set(this.x, this.y - 0.1, this.z);
 
-        if (this.shouldRemove() || this.onGround || this.level.getFluidState(this.pos).is(FluidTags.WATER) || this.level.getFluidState(this.fluidPos).is(FluidTags.WATER) || this.level.getFluidState(this.pos).is(FluidTags.LAVA) || this.y < this.level.getMinBuildHeight()) {
+        if (this.shouldRemove() || this.onGround || this.y < this.level.getMinBuildHeight() || this.level.getFluidState(this.pos).getType() != Fluids.EMPTY) {
             if (this.onGround || this.level.getFluidState(this.fluidPos).is(FluidTags.WATER)) {
                 Minecraft minecraft = Minecraft.getInstance(); // So the resource isn't leaked
                 minecraft.particleEngine.createParticle(ParticleTypes.RAIN, this.x, this.y, this.z, 0, 0, 0);
-
-                this.remove();
-            } else {
-                this.remove();
             }
+
+            this.remove();
         }
     }
 

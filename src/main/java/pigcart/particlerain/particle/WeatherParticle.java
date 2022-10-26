@@ -12,9 +12,6 @@ import pigcart.particlerain.ParticleRainClient;
 public abstract class WeatherParticle extends TextureSheetParticle {
     protected ParticleConfig particleConfig;
 
-    protected int lifespan;
-    protected int life = 0;
-
     protected final BlockPos.MutableBlockPos pos;
 
     protected WeatherParticle(ClientLevel level, double x, double y, double z, float red, float green, float blue, SpriteSet provider, ParticleConfig particleConfig) {
@@ -35,8 +32,6 @@ public abstract class WeatherParticle extends TextureSheetParticle {
         this.quadSize = 0.1f;
 
         this.pos = new BlockPos.MutableBlockPos();
-
-        this.lifespan = Math.round((ParticleRainClient.INSTANCE.config.radius / (!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity)) * 20f);
     }
 
     @Override
@@ -44,19 +39,11 @@ public abstract class WeatherParticle extends TextureSheetParticle {
         this.age = 0;
         this.lifetime = 20;
 
-        super.tick();
-
-        if (this.life < this.lifespan) {
-            this.life++;
-
-            if (this.life == this.lifespan) {
-                this.remove();
-            }
-        }
-
         this.xd = (!this.level.isThundering() ? particleConfig.wind : particleConfig.stormWind);
         this.yd = -(!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity);
         this.zd = 0.0f;
+
+        super.tick();
 
         this.pos.set(this.x, this.y, this.z);
     }
@@ -64,6 +51,6 @@ public abstract class WeatherParticle extends TextureSheetParticle {
     protected boolean shouldRemove() {
         Entity cameraEntity = Minecraft.getInstance().getCameraEntity();
 
-        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > (ParticleRainClient.INSTANCE.config.radius + 2) * (ParticleRainClient.INSTANCE.config.radius + 2);
+        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > Math.sqrt(ParticleRainClient.INSTANCE.config.radius + 2);
     }
 }

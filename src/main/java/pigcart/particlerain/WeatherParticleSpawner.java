@@ -44,7 +44,7 @@ public final class WeatherParticleSpawner {
 
                     pos.set(x + entity.getX(), y + entity.getY(), z + entity.getZ());
 
-                    pos.set(pos.getX() + (rand.nextFloat(ParticleRainClient.INSTANCE.config.radius / 10) - ((ParticleRainClient.INSTANCE.config.radius / 10) / 2)), pos.getY(), pos.getZ() + (rand.nextFloat(ParticleRainClient.INSTANCE.config.radius / 10) - ((ParticleRainClient.INSTANCE.config.radius / 10) / 2)));
+                    pos.set(pos.getX() + (rand.nextFloat(ParticleRainClient.INSTANCE.config.radius / 10) - (ParticleRainClient.INSTANCE.config.radius / 20)), pos.getY(), pos.getZ() + (rand.nextFloat(ParticleRainClient.INSTANCE.config.radius / 10) - (ParticleRainClient.INSTANCE.config.radius / 20)));
 
                     if (level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) > pos.getY()) {
                         continue;

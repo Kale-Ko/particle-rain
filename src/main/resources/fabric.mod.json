@@ -28,8 +28,7 @@
         "particlerain.mixins.json"
     ],
     "depends": {
-        "fabricloader": ">=0.14.8",
-        "fabric": "*",
+        "fabricloader": ">=0.14.10",
         "cloth-config2": "*"
     }
 }

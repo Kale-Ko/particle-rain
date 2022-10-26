@@ -8,13 +8,13 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class ModConfig implements ConfigData {
     public static class ParticleConfig {
         @ConfigEntry.Gui.Tooltip
-        public boolean enabled = false;
+        public boolean enabled = true;
 
         @ConfigEntry.Gui.Tooltip
-        public int density = 200;
+        public int density = 400;
 
         @ConfigEntry.Gui.Tooltip
-        public int stormDensity = 600;
+        public int stormDensity = 1200;
 
         @ConfigEntry.Gui.Tooltip
         public float gravity = 1;
@@ -43,7 +43,7 @@ public class ModConfig implements ConfigData {
     }
 
     @ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
-    public ParticleConfig rain = new ParticleConfig(true, 500, 1400, 1.5f, 1.5f, 0, 0.2f);
+    public ParticleConfig rain = new ParticleConfig(true, 500, 1400, 1.5f, 1.65f, 0, 0.2f);
 
     @ConfigEntry.Gui.CollapsibleObject(startExpanded = true)
     public ParticleConfig snow = new ParticleConfig(true, 500, 1600, 0.15f, 0.125f, 0.15f, 0.6f);
@@ -52,5 +52,5 @@ public class ModConfig implements ConfigData {
     public ParticleConfig sand = new ParticleConfig(true, 300, 1000, 0.2f, 0.15f, 0.4f, 0.9f);
 
     @ConfigEntry.Gui.Tooltip
-    public int radius = 24;
+    public int radius = 30;
 }
