@@ -37,7 +37,7 @@ public abstract class WeatherParticle extends TextureSheetParticle {
     @Override
     public void tick() {
         this.age = 0;
-        this.lifetime = 20;
+        this.lifetime = Integer.MAX_VALUE;
 
         this.xd = (!this.level.isThundering() ? particleConfig.wind : particleConfig.stormWind);
         this.yd = -(!this.level.isThundering() ? particleConfig.gravity : particleConfig.stormGravity);
