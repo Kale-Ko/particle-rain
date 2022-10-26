@@ -51,6 +51,6 @@ public abstract class WeatherParticle extends TextureSheetParticle {
     protected boolean shouldRemove() {
         Entity cameraEntity = Minecraft.getInstance().getCameraEntity();
 
-        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > Math.sqrt(ParticleRainClient.INSTANCE.config.radius + 2);
+        return cameraEntity == null || cameraEntity.distanceToSqr(this.x, this.y, this.z) > Math.pow(ParticleRainClient.INSTANCE.config.radius + 2, 2);
     }
 }
