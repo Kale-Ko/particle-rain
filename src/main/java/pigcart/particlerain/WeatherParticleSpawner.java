@@ -36,11 +36,12 @@ public final class WeatherParticleSpawner {
                 Random rand = new Random();
 
                 for (int pass = 0; pass < density; pass++) {
+                    double radius = 2.5d + rand.nextFloat(ParticleRainClient.INSTANCE.config.radius);
                     double theta = rand.nextFloat((float) (Math.PI * 2));
                     double phi = Math.acos((rand.nextFloat() * 2) - 1);
-                    double x = ParticleRainClient.INSTANCE.config.radius * Math.sin(phi) * Math.cos(theta);
-                    double y = ParticleRainClient.INSTANCE.config.radius * Math.sin(phi) * Math.sin(theta);
-                    double z = ParticleRainClient.INSTANCE.config.radius * Math.cos(phi);
+                    double x = radius * Math.sin(phi) * Math.cos(theta);
+                    double y = radius * Math.sin(phi) * Math.sin(theta);
+                    double z = radius * Math.cos(phi);
 
                     pos = new Vec3(x + entity.getX(), y + entity.getY(), z + entity.getZ());
 
