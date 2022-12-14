@@ -1,7 +1,12 @@
 package pigcart.particlerain.particle;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
@@ -12,7 +17,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
 import pigcart.particlerain.ParticleRainClient;
 
 public class RainDropParticle extends WeatherParticle {
@@ -40,6 +47,38 @@ public class RainDropParticle extends WeatherParticle {
 
             this.remove();
         }
+    }
+
+    @Override
+    public void render(VertexConsumer builder, Camera camera, float f) {
+        Vec3 vec3 = camera.getPosition();
+        float x = (float) (Mth.lerp(f, this.xo, this.x) - vec3.x());
+        float y = (float) (Mth.lerp(f, this.yo, this.y) - vec3.y());
+        float z = (float) (Mth.lerp(f, this.zo, this.z) - vec3.z());
+        Quaternionf quaternion = new Quaternionf(camera.rotation());
+        quaternion.mul(Axis.XN.rotationDegrees(camera.getXRot()));
+        quaternion.mul(Axis.YP.rotationDegrees(camera.getYRot()));
+        quaternion.mul(Axis.YP.rotation((float) Math.atan2(x, z)));
+
+        Vector3f[] vector3fs = new Vector3f[] { new Vector3f(-1.0f, -1.0f, 0.0f), new Vector3f(-1.0f, 1.0f, 0.0f), new Vector3f(1.0f, 1.0f, 0.0f), new Vector3f(1.0f, -1.0f, 0.0f) };
+        float k = this.getQuadSize(f);
+
+        for (int l = 0; l < 4; ++l) {
+            Vector3f vector3f = vector3fs[l];
+            vector3f.rotate(quaternion);
+            vector3f.mul(k);
+            vector3f.add(x, y, z);
+        }
+
+        float l = this.getU0();
+        float vector3f = this.getU1();
+        float m = this.getV0();
+        float n = this.getV1();
+        int o = this.getLightColor(f);
+        builder.vertex(vector3fs[0].x(), vector3fs[0].y(), vector3fs[0].z()).uv(vector3f, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+        builder.vertex(vector3fs[1].x(), vector3fs[1].y(), vector3fs[1].z()).uv(vector3f, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+        builder.vertex(vector3fs[2].x(), vector3fs[2].y(), vector3fs[2].z()).uv(l, m).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
+        builder.vertex(vector3fs[3].x(), vector3fs[3].y(), vector3fs[3].z()).uv(l, n).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(o).endVertex();
     }
 
     @Override
