@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import pigcart.particlerain.particle.DesertDustParticle;
@@ -35,9 +36,9 @@ public class ParticleRainClient implements ClientModInitializer {
     public void onInitializeClient() {
         ParticleRainClient.INSTANCE = this;
 
-        RAIN_DROP = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "rain_drop"), FabricParticleTypes.simple(true));
-        SNOW_FLAKE = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "snow_flake"), FabricParticleTypes.simple(true));
-        DESERT_DUST = Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "desert_dust"), FabricParticleTypes.simple(true));
+        RAIN_DROP = Registry.register(BuiltInRegistries.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "rain_drop"), FabricParticleTypes.simple(true));
+        SNOW_FLAKE = Registry.register(BuiltInRegistries.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "snow_flake"), FabricParticleTypes.simple(true));
+        DESERT_DUST = Registry.register(BuiltInRegistries.PARTICLE_TYPE, new ResourceLocation(MOD_ID, "desert_dust"), FabricParticleTypes.simple(true));
 
         WEATHER_SNOW = registerSound("weather.snow");
         WEATHER_SNOW_ABOVE = registerSound("weather.snow.above");
@@ -63,6 +64,6 @@ public class ParticleRainClient implements ClientModInitializer {
     private static SoundEvent registerSound(String name) {
         ResourceLocation id = new ResourceLocation(MOD_ID, name);
 
-        return Registry.register(Registry.SOUND_EVENT, id, new SoundEvent(id));
+        return Registry.register(BuiltInRegistries.SOUND_EVENT, id, SoundEvent.createVariableRangeEvent(id));
     }
 }
